@@ -4,68 +4,103 @@ import java.io.File;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.libs.jline.internal.Log;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.FrostedIsles.Commands.Admins;
 import com.FrostedIsles.Commands.Basic;
+import com.FrostedIsles.Commands.Economy;
 import com.FrostedIsles.Commands.Management;
 import com.FrostedIsles.Commands.Moderators;
+import com.FrostedIsles.Listeners.BlockEvent;
 import com.FrostedIsles.Listeners.Chat;
 import com.FrostedIsles.Listeners.InvClick;
 import com.FrostedIsles.Listeners.Join;
 import com.FrostedIsles.Listeners.Leave;
 import com.FrostedIsles.Listeners.PreJoin;
+import com.FrostedIsles.Notifier.NotifierServer;
 
 public class Main extends JavaPlugin {
 	public static Main plugin;
 	public static ConfigurationManager config;
+	public static ConfigurationManager kits;
+	public static ConfigurationManager homes;
+	public static ConfigurationManager warps;
+	public static NotifierServer notifier;
 
 	@Override
 	public void onEnable() {
-
+		plugin = this;
 		registerConfig();
 		registerCommands();
 		registerEvents();
 		AutoBroadcast();
-
+		startNotifier();
+		config.data.set("maintenance", false);
 	}
 
 	@Override
 	public void onDisable() {
 		Bukkit.getScheduler().cancelAllTasks();
-
+		//notifier.finalize();
 	}
 
 	public void registerConfig() {
 		config = new ConfigurationManager();
 		config.setup(new File(this.getDataFolder(), "config.yml"));
-
+		kits = new ConfigurationManager();
+		kits.setup(new File(this.getDataFolder(), "kits.yml"));
+		homes = new ConfigurationManager();
+		homes.setup(new File(this.getDataFolder(), "homes.yml"));
+		warps = new ConfigurationManager();
+		warps.setup(new File(this.getDataFolder(), "warps.yml"));
 	}
 
 	public void registerCommands() {
-		getCommand("stop").setExecutor(new Management());
-		getCommand("reloadconfig").setExecutor(new Management());
-		getCommand("maintenance").setExecutor(new Management());
-		getCommand("setrank").setExecutor(new Management());
+		Management manage = new Management();
+		getCommand("stop").setExecutor(manage);
+		getCommand("reloadconfig").setExecutor(manage);
+		getCommand("maintenance").setExecutor(manage);
+		getCommand("setrank").setExecutor(manage);
+		getCommand("setwarp").setExecutor(manage);
+		getCommand("delwarp").setExecutor(manage);
+		getCommand("addkit").setExecutor(manage);
+		getCommand("delkit").setExecutor(manage);
 
-		getCommand("ci").setExecutor(new Moderators());
-		getCommand("fly").setExecutor(new Moderators());
-		getCommand("invsee").setExecutor(new Moderators());
+		Moderators mod = new Moderators();
+		getCommand("ci").setExecutor(mod);
+		getCommand("fly").setExecutor(mod);
+		getCommand("invsee").setExecutor(mod);
 
-		getCommand("gmc").setExecutor(new Admins());
-		getCommand("gms").setExecutor(new Admins());
-		getCommand("gma").setExecutor(new Admins());
-		getCommand("gmsp").setExecutor(new Admins());
-		getCommand("broadcaster").setExecutor(new Admins());
+		Admins admin = new Admins();
+		getCommand("gmc").setExecutor(admin);
+		getCommand("gms").setExecutor(admin);
+		getCommand("gma").setExecutor(admin);
+		getCommand("gmsp").setExecutor(admin);
+		getCommand("broadcaster").setExecutor(admin);
 
-		getCommand("spawn").setExecutor(new Basic());
-		getCommand("shop").setExecutor(new Basic());
-		getCommand("apply").setExecutor(new Basic());
-		getCommand("who").setExecutor(new Basic());
-		getCommand("report").setExecutor(new Basic());
-		getCommand("rtp").setExecutor(new Basic());
+		Basic basic = new Basic();
+		getCommand("spawn").setExecutor(basic);
+		getCommand("shop").setExecutor(basic);
+		getCommand("apply").setExecutor(basic);
+		getCommand("who").setExecutor(basic);
+		getCommand("report").setExecutor(basic);
+		getCommand("rtp").setExecutor(basic);
+		getCommand("home").setExecutor(basic);
+		getCommand("homes").setExecutor(basic);
+		getCommand("sethome").setExecutor(basic);
+		getCommand("delhome").setExecutor(basic);
+		getCommand("warp").setExecutor(basic);
+		getCommand("warps").setExecutor(basic);
+		getCommand("kit").setExecutor(basic);
+		getCommand("kits").setExecutor(basic);
+		getCommand("msg").setExecutor(basic);
+		
+		Economy econ = new Economy();
+		getCommand("economy").setExecutor(econ);
 	}
 
 	public void registerEvents() {
@@ -75,6 +110,7 @@ public class Main extends JavaPlugin {
 		pm.registerEvents(new PreJoin(), this);
 		pm.registerEvents(new Leave(), this);
 		pm.registerEvents(new InvClick(), this);
+		pm.registerEvents(new BlockEvent(), this);
 	}
 
 	public void AutoBroadcast() {
@@ -97,4 +133,26 @@ public class Main extends JavaPlugin {
 		}.runTaskTimer(this, 0, delay);
 	}
 
+	public void startNotifier() {
+		notifier = new NotifierServer();
+		//notifier.message.SetNotifyMessage("Plugin Enabled", "The plugin has been enabled and notifier is working.");
+	}
+	
+	public static FileConfiguration getConfigFile(String name) {
+		name = name.toLowerCase();
+		
+		switch (name) {
+		case "main":
+			return config.data;
+		case "kits":
+			return kits.data;
+		case "homes":
+			return homes.data;
+		case "warps":
+			return warps.data;
+		default:
+			Log.warn("Config for " + name + " does not exist!");
+			return null;
+		}
+	}
 }

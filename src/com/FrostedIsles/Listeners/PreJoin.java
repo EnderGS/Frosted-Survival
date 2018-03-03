@@ -6,10 +6,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
+
 import com.FrostedIsles.Comp.ConfigurationManager;
 import com.FrostedIsles.Comp.Main;
 import com.FrostedIsles.Comp.Rank;
-import com.FrostedIsles.Comp.Util;
 
 public class PreJoin implements Listener {
 
@@ -18,13 +18,15 @@ public class PreJoin implements Listener {
 	
 	public PreJoin() {
 		config = new ConfigurationManager();
-		config.setup(new File(Main.getPlugin(Main.class).getDataFolder(), "config.yml"));
+		config.setup(new File(Main.plugin.getDataFolder(), "config.yml"));
 	}
 
 	@EventHandler
 	public void onPlayerPreJoin(AsyncPlayerPreLoginEvent e) {
 		String uuid = e.getUniqueId().toString();
-		Rank rank = Util.getRankByUUID(uuid);
+		Rank rank;
+		String rankStr = config.data.getString(uuid + ".rank");
+		rank = Rank.valueOf(rankStr);
 		if (config.data.getBoolean("maintenance")) {
 			if (rank.getRank() == 0) {
 				e.disallow(Result.KICK_OTHER, "FrostedIsles is currently in Maintenance \n Please check back later!");

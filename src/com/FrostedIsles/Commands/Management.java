@@ -10,8 +10,10 @@ import org.bukkit.craftbukkit.libs.jline.internal.Log;
 import org.bukkit.entity.Player;
 
 import com.FrostedIsles.Comp.ConfigurationManager;
+import com.FrostedIsles.Comp.Kits;
 import com.FrostedIsles.Comp.Main;
 import com.FrostedIsles.Comp.Util;
+import com.FrostedIsles.Comp.Warp;
 import com.FrostedIsles.Comp.Rank;
 
 public class Management implements CommandExecutor {
@@ -55,6 +57,65 @@ public class Management implements CommandExecutor {
 			Maintenance(p, sender, args, console, rank);
 		}
 		
+		if (cmd.equalsIgnoreCase("setwarp")) {
+			if (rank.getRank() >= Rank.Manager()) {
+				if (args.length > 0) {
+					Warp.addWarp(args[0], p.getLocation());
+				} else {
+					Util.sendMsg(p, "Usage: /setwarp [WarpName]");
+				}
+			} else {
+				Util.sendMsg(p, Util.pd);
+			}
+		}
+		
+		if (cmd.equalsIgnoreCase("delwarp")) {
+			if (rank.getRank() >= Rank.Manager()) {
+				if (args.length > 0) {
+					if (Warp.removeWarp(args[0])) {
+						Util.sendMsg(p, "Successfully deleted warp " + args[0] + "!");
+					} else {
+						Util.sendMsg(p, "That warp does not exist!");
+					}
+				} else {
+					Util.sendMsg(p, "Usage: /delwarp [WarpName]");
+				}
+			} else {
+				Util.sendMsg(p, Util.pd);
+			}
+		}
+		
+		if (cmd.equalsIgnoreCase("addkit")) {
+			if (rank.getRank() >= Rank.Admin()) {
+				if (args.length == 1) {
+					String[] items = new String[args.length - 1];
+					for (int i = 1; i < args.length; i++) {
+						items[i-1] = args[i];
+					}
+					Kits.addKit(args[0], p);
+				} else {
+					Util.sendMsg(p, "Usage: /addkit [KitName] (Your inventory will be used to determine the items to place in the kit).");
+				}
+			} else {
+				Util.sendMsg(p, Util.pd);
+			}
+		}
+		
+		if (cmd.equalsIgnoreCase("delkit")) {
+			if (rank.getRank() >= Rank.Manager()) {
+				if (args.length > 0) {
+					if (Kits.removeKit(args[0])) {
+						Util.sendMsg(sender, "Successfully deleted " + args[0] + "!");
+					} else {
+						Util.sendMsg(sender, "That kit does not exist!");
+					}
+				} else {
+					Util.sendMsg(p, "Usage: /delkit [KitName]");
+				}
+			} else {
+				Util.sendMsg(p, Util.pd);
+			}
+		}
 
 		return true;
 	}
@@ -203,10 +264,6 @@ public class Management implements CommandExecutor {
 			} else {
 				Util.sendMsg(p, Util.pd);
 			}
-
 		}
-
 	}
-	
-
 }

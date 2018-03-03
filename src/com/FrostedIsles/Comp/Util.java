@@ -1,8 +1,12 @@
 package com.FrostedIsles.Comp;
 
+import java.io.File;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.libs.jline.internal.Log;
 import org.bukkit.entity.Player;
 
 
@@ -17,18 +21,24 @@ public class Util {
 	
 	public static final int max = Integer.MAX_VALUE;
 	
-	public static Rank getRank(Player pls) {
-		Rank rank;
-		String rankStr = config.getData().getString(pls.getUniqueId().toString() + ".rank");
-		rank = Enum.valueOf(Rank.class, rankStr);
-		return rank;
+	public static final Location SPAWN = new Location(Bukkit.getWorld("Survival"), -779, 137, 1002.5, 0, 0);
+	public static final Location SHOP = new Location(Bukkit.getWorld("Survival"), 6513.5, 63.2, 2174.5, 90, 0);
+	
+	public Util(Main main) {
+		config = new ConfigurationManager();
+		config.setup(new File(main.getDataFolder(), "config.yml"));
 	}
-
-	public static Rank getRankByUUID(String uuid) {
-		Rank rank;
-		String rankStr = config.getData().getString(uuid + ".rank");
-		rank = Enum.valueOf(Rank.class, rankStr);
-		return rank;
+	
+	public static Rank getRank(Player pls) {
+		String rankStr = Main.getConfigFile("main").getString(pls.getUniqueId().toString() + ".rank");
+		Log.info(rankStr);
+		
+		try {
+			return Enum.valueOf(Rank.class, rankStr);
+		} catch (Exception e) {
+			Log.warn("Unable to determine rank for " + pls.getName() + ". Returning default rank.");
+			return Rank.Default;
+		}
 	}
 
 	public static void sendMsg(CommandSender p, String str) {
@@ -56,18 +66,20 @@ public class Util {
 	    }
 	    return true;
 	}
-	  
-	public static String buildMessage(String[] args)
-	  {
-	    String message = "";
-	    for (int i = 1; i < args.length; i++) {
-	      if (!message.equals("")) {
-	        message = message + " ";
-	      }
-	      message = message + args[i];
-	    }
-	    return message;
-	  }
+
+	public static String buildMessage(String[] args) {
+		return buildMessage(args, " ");
 	}
 
+	public static String buildMessage(String[] args, String delimiter) {
+		String message = "";
+		for (int i = 1; i < args.length; i++) {
+			if (!message.equals("")) {
+				message = message + delimiter;
+			}
+			message = message + args[i];
+		}
+		return message;
+	}
+}
 
